@@ -47,12 +47,6 @@ typedef enum
 
 typedef enum
 {
-    REG_PC,   // Program counter
-    REG_IR,   // Instruction register
-    REG_PSR,  // Processor status word
-    REG_CC,   // Condition codes (Positive, Negative, Zero)
-    REG_MAR,  // Memory Address Register
-    REG_MDR,  // Memory Data Register
     REG_R0,
     REG_R1,
     REG_R2,
@@ -62,7 +56,30 @@ typedef enum
     REG_R6,
     REG_R7,
     REG_R8,
+    REG_PC,   // Program counter
+    REG_IR,   // Instruction register
+    REG_PSR,  // Processor status word
+    REG_CC,   // Condition codes (Positive, Negative, Zero)
+    REG_MAR,  // Memory Address Register
+    REG_MDR,  // Memory Data Register
     REG_COUNT
 } Lc3Registers_e;
+
+typedef enum
+{
+    CC_P = 1 << 0,  // Positive
+    CC_Z = 1 << 1,  // Zero
+    CC_N = 1 << 2,  // Negative
+} Lc3ControlConditions_e;
+
+typedef enum
+{
+    TRAP_GETC = 0x20,   // read a char from keyboard
+    TRAP_OUT = 0x21,    // print a char
+    TRAP_PUTS = 0x22,   // prints a string
+    TRAP_IN = 0x23,     // read a char and echo it to terminal
+    TRAP_PUTSP = 0x24,  // output a byte string
+    TRAP_HALT = 0x25    // halt the program
+} Lc3TrapCodes_e;
 
 #endif  // __DEFS_H__
