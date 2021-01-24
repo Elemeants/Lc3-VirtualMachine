@@ -47,12 +47,12 @@ typedef enum
 
 typedef enum
 {
-    REG_PC,
-    REG_IR,
-    REG_PSR,
-    REG_CC,
-    REG_MAR,
-    REG_MDR,
+    REG_PC,   // Program counter
+    REG_IR,   // Instruction register
+    REG_PSR,  // Processor status word
+    REG_CC,   // Condition codes (Positive, Negative, Zero)
+    REG_MAR,  // Memory Address Register
+    REG_MDR,  // Memory Data Register
     REG_R0,
     REG_R1,
     REG_R2,
