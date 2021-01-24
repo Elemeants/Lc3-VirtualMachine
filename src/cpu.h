@@ -16,6 +16,12 @@ typedef struct
      * 
      */
     MemSize_t memory[ADDRESS_MEMORY_LENGTH];
-} Lc3_CPU_t;
+} LC3_CPU_t;
+
+uint8_t Lc3_initCPU(LC3_CPU_t *cpu, const char *filename);
+
+uint8_t Lc3_execInstruction(LC3_CPU_t *cpu);
+
+void Lc3_fetchNext(LC3_CPU_t *cpu);
 
 #endif  // __CPU_H__

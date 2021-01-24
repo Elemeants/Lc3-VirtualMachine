@@ -15,9 +15,10 @@ add_compile_options(
 )
 
 add_executable(lc3vm
-    src/main.c
-    src/obj_loader.c
-    src/utils.c
+src/obj_loader.c
+src/utils.c
+src/cpu.c
+src/main.c
 )
 
 target_include_directories(lc3vm PUBLIC

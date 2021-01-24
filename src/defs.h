@@ -7,7 +7,7 @@
  * @brief Each memory location can store 16 bits
  * 
  */
-typedef uint8_t MemSize_t;
+typedef uint16_t MemSize_t;
 
 /**
  * @brief The LC3 have 2^16 addresseable memory, so we write it as HEX value

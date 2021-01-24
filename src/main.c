@@ -1,10 +1,10 @@
 #include <stdio.h>
 
+#include "cpu.h"
 #include "log.h"
 #include "obj_loader.h"
-#include "cpu.h"
 
-Lc3_CPU_t cpu;
+LC3_CPU_t cpu;
 char *filename = NULL;
 
 int main(int argc, char const *argv[])
@@ -17,10 +17,19 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
-    if (!loadObjFile(&cpu, argv[1]))
+    if (!Lc3_initCPU(&cpu, argv[1]))
     {
-        LOG_LN("Can't load objfile, exit...");
         return 2;
+    }
+
+    while (1)
+    {
+        uint8_t status = Lc3_execInstruction(&cpu);
+        if (!status)
+        {
+            break;
+        }
+        Lc3_fetchNext(&cpu);
     }
 
     return 0;
