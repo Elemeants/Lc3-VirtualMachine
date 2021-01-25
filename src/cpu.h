@@ -34,4 +34,10 @@ void Lc3_WriteMem(LC3_CPU_t *cpu, uint16_t addr, uint16_t value);
 
 uint16_t Lc3_ReadMem(LC3_CPU_t *cpu, uint16_t addr);
 
+uint8_t Lc3_CC_isPositive(LC3_CPU_t *cpu);
+
+uint8_t Lc3_CC_isZero(LC3_CPU_t *cpu);
+
+uint8_t Lc3_CC_isNegative(LC3_CPU_t *cpu);
+
 #endif  // __CPU_H__
