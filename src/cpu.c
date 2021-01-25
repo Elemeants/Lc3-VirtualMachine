@@ -6,7 +6,7 @@
 #include "obj_loader.h"
 #include "utils.h"
 
-#define FETCH_INSTRUCTION_CPU(__cpu) (cpu->memory[cpu->regs[REG_PC]])
+#define FETCH_INSTRUCTION_CPU(__cpu) (__cpu->memory[__cpu->regs[REG_PC]])
 
 void Lc3_CPU_UpdateCCReg(LC3_CPU_t *cpu, Lc3Registers_e reg);
 
