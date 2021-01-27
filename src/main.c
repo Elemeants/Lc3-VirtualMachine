@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include "console.h"
 #include "cpu.h"
 #include "log.h"
 #include "obj_loader.h"
@@ -16,7 +17,8 @@ int main(int argc, char const *argv[])
         LOG_LN("Usage: lc3vm [obj-file]");
         return 1;
     }
-
+    
+    OSKeyboardInit();
     if (!Lc3_initCPU(&cpu, argv[1]))
     {
         return 2;

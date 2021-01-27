@@ -82,4 +82,13 @@ typedef enum
     TRAP_HALT = 0x25    // halt the program
 } Lc3TrapCodes_e;
 
+typedef enum
+{
+    MMR_KBSR = 0xFE00, // Keyboard
+    MMR_KBDR = 0XFE02,
+    MMR_DSR = 0xFE04,
+    MMR_DDR = 0xFE06,
+    MMR_MRC = 0xFFFE
+} Lc3MMRCodes_e;
+
 #endif  // __DEFS_H__

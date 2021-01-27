@@ -1,6 +1,5 @@
 #include "cpu.h"
 
-#include <conio.h>
 #include <stdio.h>
 
 #include "log.h"
@@ -33,6 +32,18 @@ void Lc3_WriteMem(LC3_CPU_t *cpu, uint16_t addr, uint16_t value)
 
 uint16_t Lc3_ReadMem(LC3_CPU_t *cpu, uint16_t addr)
 {
+    if (addr == MMR_KBSR)
+    {
+        if (OSKeyboardWaitKey())
+        {
+            cpu->memory[MMR_KBSR] = (1 << 15);
+            cpu->memory[MMR_KBDR] = getchar();
+        }
+        else
+        {
+            cpu->memory[MMR_KBSR] = 0;
+        }
+    }
     return cpu->memory[addr];
 }
 
