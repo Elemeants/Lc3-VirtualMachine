@@ -1,5 +1,6 @@
 #include "cpu.h"
 
+#include <conio.h>
 #include <stdio.h>
 
 #include "log.h"
@@ -241,7 +242,7 @@ void Lc3_OP_ST(LC3_CPU_t *cpu)
     //
     uint16_t instruction = FETCH_INSTRUCTION_CPU(cpu);
     uint16_t sr = (instruction >> 9) & 0x7;
-    uint16_t pc_offset = sign_extend(instruction & 0x1FF, 9U) + Lc3_ReadPC(cpu) + 1U;  // We add 1 for the next fetch status
+    uint16_t pc_offset = sign_extend(instruction & 0x1FF, 9U) + Lc3_ReadPC(cpu);
     uint16_t mem = Lc3_ReadReg(cpu, sr);
     Lc3_WriteMem(cpu, pc_offset, mem);
     printf(" # [R%u -> $0x%04X] = 0x%04X\n", sr, pc_offset, mem);
@@ -256,7 +257,7 @@ void Lc3_OP_STI(LC3_CPU_t *cpu)
     //
     uint16_t instruction = FETCH_INSTRUCTION_CPU(cpu);
     uint16_t sr = (instruction >> 9) & 0x7;
-    uint16_t pc_offset = sign_extend(instruction & 0x1FF, 9U) + Lc3_ReadPC(cpu) + 1U;  // We add 1 for the next fetch status
+    uint16_t pc_offset = sign_extend(instruction & 0x1FF, 9U) + Lc3_ReadPC(cpu);
     uint16_t mem = Lc3_ReadReg(cpu, sr);
     uint16_t mem_target = Lc3_ReadMem(cpu, pc_offset);
     Lc3_WriteMem(cpu, mem_target, mem);
@@ -326,7 +327,7 @@ void Lc3_OP_LD(LC3_CPU_t *cpu)
     // +---+---+---+---+----+-----------+
     uint16_t instruction = FETCH_INSTRUCTION_CPU(cpu);
     uint8_t reg = (instruction >> 9) & 0x7;
-    uint16_t mem = Lc3_ReadMem(cpu, sign_extend(instruction & 0xFF, 8) + Lc3_ReadPC(cpu) + 1U);
+    uint16_t mem = Lc3_ReadMem(cpu, sign_extend(instruction & 0xFF, 8) + Lc3_ReadPC(cpu));
     Lc3_WriteReg(cpu, reg, mem);
     printf(" # [R%u <- $0x%04X]\n", reg, mem);
     Lc3_CPU_UpdateCCReg(cpu, reg);
@@ -340,7 +341,7 @@ void Lc3_OP_LDI(LC3_CPU_t *cpu)
     // +---+---+---+---+----+-----------+
     uint16_t instruction = FETCH_INSTRUCTION_CPU(cpu);
     uint8_t reg = (instruction >> 9) & 0x7;
-    uint16_t i_mem = Lc3_ReadMem(cpu, sign_extend(instruction & 0xFF, 8) + Lc3_ReadPC(cpu) + 1U);
+    uint16_t i_mem = Lc3_ReadMem(cpu, sign_extend(instruction & 0xFF, 8) + Lc3_ReadPC(cpu));
     uint16_t mem = Lc3_ReadMem(cpu, i_mem);
     Lc3_WriteReg(cpu, reg, mem);
     printf(" # [R%u <- $0x%04X]\n", reg, mem);
@@ -389,7 +390,7 @@ void Lc3_OP_BR(LC3_CPU_t *cpu)
     uint8_t p = ((instruction >> 9) & 0b1) && Lc3_CC_isPositive(cpu);
     if (n || z || p)
     {
-        Lc3_WriteReg(cpu, REG_PC, sign_extend(instruction & 0xFF, 8U) + Lc3_ReadPC(cpu) + 1U);
+        Lc3_WriteReg(cpu, REG_PC, sign_extend(instruction & 0xFF, 8U) + Lc3_ReadPC(cpu));
         printf(" # [BR -> $0x%04X]\n", Lc3_ReadPC(cpu));
     }
     else
@@ -407,25 +408,51 @@ uint8_t Lc3_OP_Trap(LC3_CPU_t *cpu)
     //
     uint16_t instruction = FETCH_INSTRUCTION_CPU(cpu);
     uint16_t trp_v = instruction & 0xFF;
+    uint16_t tmp;
+    uint8_t stop = 0x00;
 
     // First load PC incremented to R7
-    Lc3_WriteReg(cpu, REG_R7, Lc3_ReadPC(cpu) + 1U);
+    Lc3_WriteReg(cpu, REG_R7, Lc3_ReadPC(cpu));
     switch (trp_v)
     {
     case TRAP_GETC:
-        return 1;
+        Lc3_WriteReg(cpu, REG_R0, getch());
+        break;
     case TRAP_OUT:
-        return 1;
+        printf("%c", Lc3_ReadReg(cpu, REG_R0));
+        break;
     case TRAP_PUTS:
-        return 1;
+        tmp = Lc3_ReadMem(cpu, Lc3_ReadReg(cpu, REG_R0));
+        while (tmp != 0x0000)
+        {
+            printf("%c", Lc3_ReadMem(cpu, tmp));
+            tmp++;
+        }
+        break;
     case TRAP_IN:
-        return 1;
+        Lc3_WriteReg(cpu, REG_R0, getch());
+        printf("%c", Lc3_ReadReg(cpu, REG_R0));
+        break;
     case TRAP_PUTSP:
-        return 1;
+        tmp = Lc3_ReadMem(cpu, Lc3_ReadReg(cpu, REG_R0));
+        while (1)
+        {
+            uint16_t mem = Lc3_ReadMem(cpu, tmp);
+            if (((mem & 0xFF) == 0x00) || ((mem >> 8) == 0x00))
+            {
+                break;
+            }
+            printf("%c%c", mem & 0xFF, mem >> 8);
+            tmp++;
+        }
+        break;
     case TRAP_HALT:
-        return 0;
+        stop = 0x1;
+        break;
     }
-    return 0;
+
+    Lc3_WriteReg(cpu, REG_PC, Lc3_ReadReg(cpu, REG_R7));
+    return !stop;
 }
 
 void Lc3_CPU_UpdateCCReg(LC3_CPU_t *cpu, Lc3Registers_e reg)
