@@ -10,7 +10,7 @@ static void HandleInterrupt(int signal)
     exit(-2);
 }
 
-#if __UNIX__
+#if __unix__
 struct termios original_tio;
 #elif _WIN32
 HANDLE hStdin = INVALID_HANDLE_VALUE;
@@ -25,7 +25,7 @@ void OSKeyboardInit()
 
 uint16_t OSKeyboardWaitKey()
 {
-#if __UNIX__
+#if __unix__
     fd_set readfds;
     FD_ZERO(&readfds);
     FD_SET(STDIN_FILENO, &readfds);
@@ -40,7 +40,7 @@ uint16_t OSKeyboardWaitKey()
 
 void OSKeyboardDisableBuffering()
 {
-#if __UNIX__
+#if __unix__
     tcgetattr(STDIN_FILENO, &original_tio);
     struct termios new_tio = original_tio;
     new_tio.c_lflag &= ~ICANON & ~ECHO;
@@ -57,7 +57,7 @@ void OSKeyboardDisableBuffering()
 
 void OSKeyboardRestoreBuffering()
 {
-#if __UNIX__
+#if __unix__
     tcsetattr(STDIN_FILENO, TCSANOW, &original_tio);
 #elif _WIN32
     SetConsoleMode(hStdin, fdwOldMode);

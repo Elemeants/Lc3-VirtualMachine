@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <signal.h>
-#if __UNIX__
+#if __unix__
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/termios.h>

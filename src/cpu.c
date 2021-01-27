@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 
+#include "console.h"
 #include "log.h"
 #include "obj_loader.h"
 #include "utils.h"
@@ -427,7 +428,7 @@ uint8_t Lc3_OP_Trap(LC3_CPU_t *cpu)
     switch (trp_v)
     {
     case TRAP_GETC:
-        Lc3_WriteReg(cpu, REG_R0, getch());
+        Lc3_WriteReg(cpu, REG_R0, getchar());
         break;
     case TRAP_OUT:
         printf("%c", Lc3_ReadReg(cpu, REG_R0));
@@ -441,7 +442,7 @@ uint8_t Lc3_OP_Trap(LC3_CPU_t *cpu)
         }
         break;
     case TRAP_IN:
-        Lc3_WriteReg(cpu, REG_R0, getch());
+        Lc3_WriteReg(cpu, REG_R0, getchar());
         printf("%c", Lc3_ReadReg(cpu, REG_R0));
         break;
     case TRAP_PUTSP:

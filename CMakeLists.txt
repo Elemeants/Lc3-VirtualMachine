@@ -2,7 +2,7 @@
 # Project settings
 ##########################################################################
 cmake_minimum_required(VERSION 3.1.0)
-project(lc3vm VERSION 0.4.0)
+project(lc3vm VERSION 0.4.1)
 set(PROJECT_NAME lc3vm)
 
 set (CMAKE_C_STANDARD 11)
