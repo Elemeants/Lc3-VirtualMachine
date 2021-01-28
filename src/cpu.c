@@ -7,23 +7,118 @@
 #include "obj_loader.h"
 #include "utils.h"
 
+/**
+ * @brief Returns the actual instruction on the CPU
+ * 
+ */
 #define FETCH_INSTRUCTION_CPU(__cpu) (__cpu->memory[__cpu->regs[REG_PC]])
 
+/**
+ * @brief [INTERNAL] Updates the conditional control register of the cpu by a register
+ * 
+ * @param cpu pointer to the cpu instance
+ * @param reg on this register will be updated the CC register
+ */
 void Lc3_CPU_UpdateCCReg(LC3_CPU_t *cpu, Lc3Registers_e reg);
 
+/**
+ * @brief [INTERNAL] Executes the opcode ADD
+ * 
+ * @param cpu pointer to the cpu instance
+ */
 void Lc3_OP_Add(LC3_CPU_t *cpu);
+
+/**
+ * @brief [INTERNAL] Executes the opcode AND
+ * 
+ * @param cpu pointer to the cpu instance
+ */
 void Lc3_OP_And(LC3_CPU_t *cpu);
+
+/**
+ * @brief [INTERNAL] Executes the opcode NOT
+ * 
+ * @param cpu pointer to the cpu instance
+ */
 void Lc3_OP_Not(LC3_CPU_t *cpu);
+
+/**
+ * @brief [INTERNAL] Executes the opcode ST
+ * 
+ * @param cpu pointer to the cpu instance
+ */
 void Lc3_OP_ST(LC3_CPU_t *cpu);
+
+/**
+ * @brief [INTERNAL] Executes the opcode STI
+ * 
+ * @param cpu pointer to the cpu instance
+ */
 void Lc3_OP_STI(LC3_CPU_t *cpu);
+
+/**
+ * @brief [INTERNAL] Executes the opcode STR
+ * 
+ * @param cpu pointer to the cpu instance
+ */
 void Lc3_OP_STR(LC3_CPU_t *cpu);
+
+/**
+ * @brief [INTERNAL] Executes the opcode JMP
+ * 
+ * @param cpu pointer to the cpu instance
+ */
 void Lc3_OP_JMP(LC3_CPU_t *cpu);
+
+/**
+ * @brief [INTERNAL] Executes the opcode JSR
+ * 
+ * @param cpu pointer to the cpu instance
+ */
 void Lc3_OP_JSR(LC3_CPU_t *cpu);
+
+/**
+ * @brief [INTERNAL] Executes the opcode LD
+ * 
+ * @param cpu pointer to the cpu instance
+ */
 void Lc3_OP_LD(LC3_CPU_t *cpu);
+
+/**
+ * @brief [INTERNAL] Executes the opcode LDI
+ * 
+ * @param cpu pointer to the cpu instance
+ */
 void Lc3_OP_LDI(LC3_CPU_t *cpu);
+
+/**
+ * @brief [INTERNAL] Executes the opcode LDR
+ * 
+ * @param cpu pointer to the cpu instance
+ */
 void Lc3_OP_LDR(LC3_CPU_t *cpu);
+
+/**
+ * @brief [INTERNAL] Executes the opcode LEA
+ * 
+ * @param cpu pointer to the cpu instance
+ */
 void Lc3_OP_LEA(LC3_CPU_t *cpu);
+
+/**
+ * @brief [INTERNAL] Executes the opcode BR
+ * 
+ * @param cpu pointer to the cpu instance
+ */
 void Lc3_OP_BR(LC3_CPU_t *cpu);
+
+/**
+ * @brief [INTERNAL] Executes the opcode TRAP
+ * 
+ * @param cpu pointer to the cpu instance
+ * @return uint8_t because this opcode can stop the execution
+ * returns 1 if execution can still run, eiter 0.
+ */
 uint8_t Lc3_OP_Trap(LC3_CPU_t *cpu);
 
 void Lc3_WriteMem(LC3_CPU_t *cpu, uint16_t addr, uint16_t value)
@@ -35,7 +130,7 @@ uint16_t Lc3_ReadMem(LC3_CPU_t *cpu, uint16_t addr)
 {
     if (addr == MMR_KBSR)
     {
-        if (OSKeyboardWaitKey())
+        if (OSKeyboardIsKeyPressed())
         {
             cpu->memory[MMR_KBSR] = (1 << 15);
             cpu->memory[MMR_KBDR] = getchar();
@@ -85,7 +180,7 @@ uint8_t Lc3_initCPU(LC3_CPU_t *cpu, const char *filename)
     if (!loadObjFile(cpu, filename))
     {
         LOG_LN("Can't load objfile, exit...");
-        return 0;
+        return 0;  // If can't load stop the program
     }
 
     Lc3_WriteReg(cpu, REG_PC, PC_START_ADDRESS);
@@ -95,6 +190,7 @@ uint8_t Lc3_initCPU(LC3_CPU_t *cpu, const char *filename)
 
 uint8_t Lc3_execInstruction(LC3_CPU_t *cpu)
 {
+    // TODO: Can optimize this function...
     uint16_t instruction = FETCH_INSTRUCTION_CPU(cpu);
     Lc3Opcodes_e opcode = (Lc3Opcodes_e)((instruction & 0xF000) >> 12);
     LOG(" PC: 0x%04X [0x%04X] -> ", cpu->regs[REG_PC], instruction);
@@ -153,6 +249,7 @@ uint8_t Lc3_execInstruction(LC3_CPU_t *cpu)
         Lc3_OP_JMP(cpu);
         break;
     case OP_RES:
+        // RES Opcode is reserved so throw a error message and stop the program
         LOG_TXT("RES ERROR Invalid opcode\n");
         return 0;
     case OP_LEA:
@@ -187,7 +284,7 @@ void Lc3_OP_Add(LC3_CPU_t *cpu)
     uint16_t instruction = FETCH_INSTRUCTION_CPU(cpu);
     uint16_t dr = (instruction >> 9) & 0x7;
     uint16_t sr1 = (instruction >> 6) & 0x7;
-    if ((instruction >> 5) & 0x1)
+    if ((instruction >> 5) & 0x1)  // bit inmediate
     {
         uint16_t param = sign_extend(instruction & 0x1F, 5);
         Lc3_WriteReg(cpu, dr, Lc3_ReadReg(cpu, sr1) + param);
@@ -216,7 +313,7 @@ void Lc3_OP_And(LC3_CPU_t *cpu)
     uint16_t instruction = FETCH_INSTRUCTION_CPU(cpu);
     uint16_t dr = (instruction >> 9) & 0x7;
     uint16_t sr1 = (instruction >> 6) & 0x7;
-    if ((instruction >> 5) & 0x1)
+    if ((instruction >> 5) & 0x1)  // bit inmediate
     {
         uint16_t param = sign_extend(instruction & 0x1F, 5);
         Lc3_WriteReg(cpu, dr, Lc3_ReadReg(cpu, sr1) & param);
@@ -305,12 +402,13 @@ void Lc3_OP_JMP(LC3_CPU_t *cpu)
     uint16_t instruction = FETCH_INSTRUCTION_CPU(cpu);
     uint16_t reg = (instruction >> 6) & 0x7;
     Lc3_WriteReg(cpu, REG_PC, Lc3_ReadReg(cpu, reg));  // This -1 is because the next line is fetch next.
-    if (reg == 0x7)
+    if (reg == 0x7)                                    // In case RET opcode,
     {
         LOG_TXT(" # [PC <- $0x%04X R7]\n", Lc3_ReadPC(cpu));
     }
     else
     {
+        // Because we increment PC finishing this function, we need to decrement by 1 the PC register now
         Lc3_WriteReg(cpu, REG_PC, Lc3_ReadPC(cpu) - 1U);
         LOG_TXT(" # [PC <- $0x%04X]\n", Lc3_ReadPC(cpu));
     }
@@ -328,7 +426,7 @@ void Lc3_OP_JSR(LC3_CPU_t *cpu)
     uint16_t instruction = FETCH_INSTRUCTION_CPU(cpu);
     Lc3_WriteReg(cpu, REG_R7, Lc3_ReadPC(cpu));
 
-    if ((instruction >> 11) & 0b1)
+    if ((instruction >> 11) & 0b1) // bit 11 | 0 = JSRR | 1 = JSR
     {
         uint16_t pc_offset = instruction & 0x3FF;
         Lc3_WriteReg(cpu, REG_PC, Lc3_ReadPC(cpu) + sign_extend(pc_offset, 11U));

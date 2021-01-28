@@ -1,3 +1,12 @@
+/**
+ * @file main.c
+ * @author Daniel Polanco (jdanypa@gmail.com)
+ * @version 1.0
+ * @date 2021-01-27
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
 #include <stdio.h>
 
 #include "console.h"
@@ -5,20 +14,24 @@
 #include "log.h"
 #include "obj_loader.h"
 
+/**
+ * @brief Mame of the log output file
+ * 
+ */
+#define LOG_OUTPUT_FILENAME "lc3vm.log"
+
 LC3_CPU_t cpu;
 char *filename = NULL;
 
 int main(int argc, char const *argv[])
 {
-    printf("Hello world! This Virtual machine for Lc3 is been building...\n");
-
     if (argc < 2)
     {
         printf("Usage: lc3vm [obj-file]\n");
         return 1;
     }
 
-    Log_init("lc3vm.log");
+    Log_init(LOG_OUTPUT_FILENAME);
 
     OSKeyboardInit();
 

@@ -3,6 +3,11 @@
 // This keyboard platform specific implementation is based on
 // https://justinmeiners.github.io/lc3-vm/index.html
 
+/**
+ * @brief Interruption when the application is closed, to restore the terminal previous state.
+ * 
+ * @param signal on close signal
+ */
 static void HandleInterrupt(int signal)
 {
     OSKeyboardRestoreBuffering();
@@ -23,7 +28,7 @@ void OSKeyboardInit()
     OSKeyboardDisableBuffering();
 }
 
-uint16_t OSKeyboardWaitKey()
+uint16_t OSKeyboardIsKeyPressed()
 {
 #if __unix__
     fd_set readfds;

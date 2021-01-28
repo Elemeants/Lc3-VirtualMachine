@@ -1,3 +1,13 @@
+/**
+ * @file defs.h
+ * @author Daniel Polanco (jdanypa@gmail.com)
+ * @brief Contains the definitions of the Lc3
+ * @version 1.0
+ * @date 2021-01-27
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
 #if !defined(__DEFS_H__)
 #define __DEFS_H__
 
@@ -45,6 +55,10 @@ typedef enum
     OP_TRAP   // Trap
 } Lc3Opcodes_e;
 
+/**
+ * @brief Available registers on Lc3
+ * 
+ */
 typedef enum
 {
     REG_R0,
@@ -65,6 +79,10 @@ typedef enum
     REG_COUNT
 } Lc3Registers_e;
 
+/**
+ * @brief Available states of the control condition register
+ * 
+ */
 typedef enum
 {
     CC_P = 1 << 0,  // Positive
@@ -72,6 +90,10 @@ typedef enum
     CC_N = 1 << 2,  // Negative
 } Lc3ControlConditions_e;
 
+/**
+ * @brief Available trap codes for the Lc3
+ * 
+ */
 typedef enum
 {
     TRAP_GETC = 0x20,   // read a char from keyboard
@@ -82,13 +104,17 @@ typedef enum
     TRAP_HALT = 0x25    // halt the program
 } Lc3TrapCodes_e;
 
+/**
+ * @brief Memory mapped registers on Lc3
+ * 
+ */
 typedef enum
 {
-    MMR_KBSR = 0xFE00, // Keyboard
-    MMR_KBDR = 0XFE02,
-    MMR_DSR = 0xFE04,
-    MMR_DDR = 0xFE06,
-    MMR_MRC = 0xFFFE
+    MMR_KBSR = 0xFE00, // Keyboard status register
+    MMR_KBDR = 0XFE02, // Keyboard data register
+    MMR_DSR = 0xFE04,  // Display status register
+    MMR_DDR = 0xFE06,  // Display data register
+    MMR_MRC = 0xFFFE   // Machine control register
 } Lc3MMRCodes_e;
 
 #endif  // __DEFS_H__
