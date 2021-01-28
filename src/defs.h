@@ -71,11 +71,7 @@ typedef enum
     REG_R7,
     REG_R8,
     REG_PC,   // Program counter
-    REG_IR,   // Instruction register
-    REG_PSR,  // Processor status word
     REG_CC,   // Condition codes (Positive, Negative, Zero)
-    REG_MAR,  // Memory Address Register
-    REG_MDR,  // Memory Data Register
     REG_COUNT
 } Lc3Registers_e;
 
