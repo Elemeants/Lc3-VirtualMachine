@@ -10,15 +10,18 @@ char *filename = NULL;
 
 int main(int argc, char const *argv[])
 {
-    LOG_LN("Hello world! This Virtual machine for Lc3 is been building...");
+    printf("Hello world! This Virtual machine for Lc3 is been building...\n");
 
     if (argc < 2)
     {
-        LOG_LN("Usage: lc3vm [obj-file]");
+        printf("Usage: lc3vm [obj-file]\n");
         return 1;
     }
-    
+
+    Log_init("lc3vm.log");
+
     OSKeyboardInit();
+
     if (!Lc3_initCPU(&cpu, argv[1]))
     {
         return 2;

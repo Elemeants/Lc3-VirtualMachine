@@ -25,10 +25,10 @@ uint8_t loadObjFile(LC3_CPU_t *cpu, const char *filename)
     LOG_LN("Program size: %lu bytes", progSize * sizeof(MemSize_t));
 
     LOG_LN("================================= Program memory ==================================");
-    printf("            0     1     2     3     4     5     6     7     8     9     A     B     C     D     E     F\n");
+    LOG_TXT("            0     1     2     3     4     5     6     7     8     9     A     B     C     D     E     F\n");
     for (uint16_t i = memOrig; i < (memOrig + progSize); i += 0x10)
     {
-        printf(" 0x%04X:", i);
+        LOG_TXT(" 0x%04X:", i);
                 
         for (uint8_t x = 0; x < 0x10; x++)
         {
@@ -36,9 +36,9 @@ uint8_t loadObjFile(LC3_CPU_t *cpu, const char *filename)
                 break;
             }
             cpu->memory[i + x] = swap_16(cpu->memory[i + x]);
-            printf(" %04X ", cpu->memory[i + x]);
+            LOG_TXT(" %04X ", cpu->memory[i + x]);
         }
-        printf("\n");
+        LOG_TXT("\n");
     }
     LOG_LN("===================================================================================");
 

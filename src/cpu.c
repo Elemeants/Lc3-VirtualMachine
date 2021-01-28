@@ -39,6 +39,7 @@ uint16_t Lc3_ReadMem(LC3_CPU_t *cpu, uint16_t addr)
         {
             cpu->memory[MMR_KBSR] = (1 << 15);
             cpu->memory[MMR_KBDR] = getchar();
+            LOG_TXT(" KeyboardEvent ");
         }
         else
         {
@@ -100,69 +101,69 @@ uint8_t Lc3_execInstruction(LC3_CPU_t *cpu)
     switch (opcode)
     {
     case OP_BR:
-        printf("BR   ");
+        LOG_TXT("BR   ");
         Lc3_OP_BR(cpu);
         break;
     case OP_ADD:
-        printf("ADD  ");
+        LOG_TXT("ADD  ");
         Lc3_OP_Add(cpu);
         break;
     case OP_LD:
-        printf("LD   ");
+        LOG_TXT("LD   ");
         Lc3_OP_LD(cpu);
         break;
     case OP_ST:
-        printf("ST   ");
+        LOG_TXT("ST   ");
         Lc3_OP_ST(cpu);
         break;
     case OP_JSR:
-        printf("JSR  ");
+        LOG_TXT("JSR  ");
         Lc3_OP_JSR(cpu);
         break;
     case OP_AND:
-        printf("AND  ");
+        LOG_TXT("AND  ");
         Lc3_OP_And(cpu);
         break;
     case OP_LDR:
-        printf("LDR  ");
+        LOG_TXT("LDR  ");
         Lc3_OP_LDR(cpu);
         break;
     case OP_STR:
-        printf("STR  ");
+        LOG_TXT("STR  ");
         Lc3_OP_STR(cpu);
         break;
     case OP_JSRR:
-        printf("JSRR ");
+        LOG_TXT("JSRR ");
         Lc3_OP_JSR(cpu);
         break;
     case OP_NOT:
-        printf("NOT  ");
+        LOG_TXT("NOT  ");
         Lc3_OP_Not(cpu);
         break;
     case OP_LDI:
-        printf("LDI  ");
+        LOG_TXT("LDI  ");
         Lc3_OP_LDI(cpu);
         break;
     case OP_STI:
-        printf("STI  ");
+        LOG_TXT("STI  ");
         Lc3_OP_STI(cpu);
         break;
     case OP_JMP:
-        printf("JMP  ");
+        LOG_TXT("JMP  ");
         Lc3_OP_JMP(cpu);
         break;
     case OP_RES:
-        printf("RES ERROR Invalid opcode\n");
+        LOG_TXT("RES ERROR Invalid opcode\n");
         return 0;
     case OP_LEA:
-        printf("LEA  ");
+        LOG_TXT("LEA  ");
         Lc3_OP_LEA(cpu);
         break;
     case OP_TRAP:
-        printf("TRAP\n");
+        LOG_TXT("TRAP ");
         return Lc3_OP_Trap(cpu);
     default:
-        printf("ERROR Invalid opcode 0x%X", (uint8_t)opcode);
+        LOG_TXT("ERROR Invalid opcode 0x%X", (uint8_t)opcode);
         return 0;
     }
     return 1;
@@ -190,13 +191,13 @@ void Lc3_OP_Add(LC3_CPU_t *cpu)
     {
         uint16_t param = sign_extend(instruction & 0x1F, 5);
         Lc3_WriteReg(cpu, dr, Lc3_ReadReg(cpu, sr1) + param);
-        printf(" # [R%u <- R%u + 0x%04X] = 0x%04X\n", dr, sr1, param, cpu->regs[dr]);
+        LOG_TXT(" # [R%u <- R%u + 0x%04X] = 0x%04X\n", dr, sr1, param, cpu->regs[dr]);
     }
     else
     {
         uint16_t sr2 = instruction & 0x7;
         Lc3_WriteReg(cpu, dr, Lc3_ReadReg(cpu, sr1) + Lc3_ReadReg(cpu, sr2));
-        printf(" # [R%u <- R%u + R%u] = 0x%04X\n", dr, sr1, sr2, cpu->regs[dr]);
+        LOG_TXT(" # [R%u <- R%u + R%u] = 0x%04X\n", dr, sr1, sr2, cpu->regs[dr]);
     }
     Lc3_CPU_UpdateCCReg(cpu, dr);
 }
@@ -219,13 +220,13 @@ void Lc3_OP_And(LC3_CPU_t *cpu)
     {
         uint16_t param = sign_extend(instruction & 0x1F, 5);
         Lc3_WriteReg(cpu, dr, Lc3_ReadReg(cpu, sr1) & param);
-        printf(" # [R%u <- R%u & 0x%04X] = 0x%04X\n", dr, sr1, param, cpu->regs[dr]);
+        LOG_TXT(" # [R%u <- R%u & 0x%04X] = 0x%04X\n", dr, sr1, param, cpu->regs[dr]);
     }
     else
     {
         uint16_t sr2 = instruction & 0x7;
         Lc3_WriteReg(cpu, dr, Lc3_ReadReg(cpu, sr1) & Lc3_ReadReg(cpu, sr2));
-        printf(" # [R%u <- R%u & R%u] = 0x%04X\n", dr, sr1, sr2, cpu->regs[dr]);
+        LOG_TXT(" # [R%u <- R%u & R%u] = 0x%04X\n", dr, sr1, sr2, cpu->regs[dr]);
     }
     Lc3_CPU_UpdateCCReg(cpu, dr);
 }
@@ -241,7 +242,7 @@ void Lc3_OP_Not(LC3_CPU_t *cpu)
     uint16_t dr = (instruction >> 9) & 0x7;
     uint16_t sr = (instruction >> 6) & 0x7;
     Lc3_WriteReg(cpu, dr, ~Lc3_ReadReg(cpu, sr));
-    printf(" # [R%u <- ~R%u] = 0x%04X\n", dr, sr, cpu->regs[dr]);
+    LOG_TXT(" # [R%u <- ~R%u] = 0x%04X\n", dr, sr, cpu->regs[dr]);
     Lc3_CPU_UpdateCCReg(cpu, dr);
 }
 
@@ -254,10 +255,10 @@ void Lc3_OP_ST(LC3_CPU_t *cpu)
     //
     uint16_t instruction = FETCH_INSTRUCTION_CPU(cpu);
     uint16_t sr = (instruction >> 9) & 0x7;
-    uint16_t pc_offset = sign_extend(instruction & 0x1FF, 9U) + Lc3_ReadPC(cpu);
+    uint16_t pc_offset = sign_extend(instruction & 0x1FF, 9U) + Lc3_ReadPC(cpu) + 1u;
     uint16_t mem = Lc3_ReadReg(cpu, sr);
     Lc3_WriteMem(cpu, pc_offset, mem);
-    printf(" # [R%u -> $0x%04X] = 0x%04X\n", sr, pc_offset, mem);
+    LOG_TXT(" # [R%u -> $0x%04X] = 0x%04X\n", sr, pc_offset, mem);
 }
 
 void Lc3_OP_STI(LC3_CPU_t *cpu)
@@ -273,7 +274,7 @@ void Lc3_OP_STI(LC3_CPU_t *cpu)
     uint16_t mem = Lc3_ReadReg(cpu, sr);
     uint16_t mem_target = Lc3_ReadMem(cpu, pc_offset);
     Lc3_WriteMem(cpu, mem_target, mem);
-    printf(" # [R%u -> $0x%04X] = 0x%04X\n", sr, mem_target, mem);
+    LOG_TXT(" # [R%u -> $0x%04X] = 0x%04X\n", sr, mem_target, mem);
 }
 
 void Lc3_OP_STR(LC3_CPU_t *cpu)
@@ -287,8 +288,9 @@ void Lc3_OP_STR(LC3_CPU_t *cpu)
     uint16_t sr = (instruction >> 9) & 0x7;
     uint16_t base = Lc3_ReadReg(cpu, (instruction >> 6) & 0x7);
     uint16_t offset = sign_extend(instruction & 0x3F, 6U);
-    Lc3_WriteMem(cpu, base + offset, Lc3_ReadReg(cpu, sr));
-    printf(" # [R%u -> $0x%04X] = 0x%04X\n", sr, base + offset, Lc3_ReadReg(cpu, sr));
+    uint16_t addr = base + offset;
+    Lc3_WriteMem(cpu, addr, Lc3_ReadReg(cpu, sr));
+    LOG_TXT(" # [R%u -> $0x%04X] = 0x%04X\n", sr, addr, Lc3_ReadReg(cpu, sr));
 }
 
 void Lc3_OP_JMP(LC3_CPU_t *cpu)
@@ -302,8 +304,16 @@ void Lc3_OP_JMP(LC3_CPU_t *cpu)
     //
     uint16_t instruction = FETCH_INSTRUCTION_CPU(cpu);
     uint16_t reg = (instruction >> 6) & 0x7;
-    Lc3_WriteReg(cpu, REG_PC, Lc3_ReadReg(cpu, reg));
-    printf(" # [PC <- $0x%04X]\n", Lc3_ReadPC(cpu));
+    Lc3_WriteReg(cpu, REG_PC, Lc3_ReadReg(cpu, reg));  // This -1 is because the next line is fetch next.
+    if (reg == 0x7)
+    {
+        LOG_TXT(" # [PC <- $0x%04X R7]\n", Lc3_ReadPC(cpu));
+    }
+    else
+    {
+        Lc3_WriteReg(cpu, REG_PC, Lc3_ReadPC(cpu) - 1U);
+        LOG_TXT(" # [PC <- $0x%04X]\n", Lc3_ReadPC(cpu));
+    }
 }
 
 void Lc3_OP_JSR(LC3_CPU_t *cpu)
@@ -328,7 +338,8 @@ void Lc3_OP_JSR(LC3_CPU_t *cpu)
         uint8_t br = (instruction >> 6) & 0x7;
         Lc3_WriteReg(cpu, REG_PC, Lc3_ReadReg(cpu, br));
     }
-    printf(" # [PC <- $0x%04X]\n", Lc3_ReadPC(cpu));
+    Lc3_WriteReg(cpu, REG_PC, Lc3_ReadPC(cpu));
+    LOG_TXT(" # [PC <- $0x%04X | R7 <- $0x%04X]\n", Lc3_ReadPC(cpu), Lc3_ReadReg(cpu, REG_R7));
 }
 
 void Lc3_OP_LD(LC3_CPU_t *cpu)
@@ -341,7 +352,7 @@ void Lc3_OP_LD(LC3_CPU_t *cpu)
     uint8_t reg = (instruction >> 9) & 0x7;
     uint16_t mem = Lc3_ReadMem(cpu, sign_extend(instruction & 0xFF, 8U) + Lc3_ReadPC(cpu) + 1);
     Lc3_WriteReg(cpu, reg, mem);
-    printf(" # [R%u <- 0x%04X]\n", reg, mem);
+    LOG_TXT(" # [R%u <- 0x%04X]\n", reg, mem);
     Lc3_CPU_UpdateCCReg(cpu, reg);
 }
 
@@ -357,7 +368,7 @@ void Lc3_OP_LDI(LC3_CPU_t *cpu)
     uint16_t i_mem = Lc3_ReadMem(cpu, addr);
     uint16_t mem = Lc3_ReadMem(cpu, i_mem);
     Lc3_WriteReg(cpu, reg, mem);
-    printf(" # [R%u <- 0x%04X]\n", reg, mem);
+    LOG_TXT(" # [R%u <- 0x%04X]\n", reg, mem);
     Lc3_CPU_UpdateCCReg(cpu, reg);
 }
 
@@ -374,7 +385,7 @@ void Lc3_OP_LDR(LC3_CPU_t *cpu)
     uint16_t addr = Lc3_ReadReg(cpu, base) + offset;
     uint16_t mem = Lc3_ReadMem(cpu, addr);
     Lc3_WriteReg(cpu, reg, mem);
-    printf(" # [R%u <- 0x%04X ($0x%04X)]\n", reg, mem, addr);
+    LOG_TXT(" # [R%u <- 0x%04X ($0x%04X)]\n", reg, mem, addr);
     Lc3_CPU_UpdateCCReg(cpu, reg);
 }
 
@@ -388,7 +399,7 @@ void Lc3_OP_LEA(LC3_CPU_t *cpu)
     uint8_t reg = (instruction >> 9) & 0x7;
     uint8_t offset = sign_extend(instruction & 0xFF, 8U);
     Lc3_WriteReg(cpu, reg, offset + Lc3_ReadPC(cpu) + 1U);
-    printf(" # [R%u <- 0x%04X]\n", reg, Lc3_ReadReg(cpu, reg));
+    LOG_TXT(" # [R%u <- 0x%04X]\n", reg, Lc3_ReadReg(cpu, reg));
     Lc3_CPU_UpdateCCReg(cpu, reg);
 }
 
@@ -405,11 +416,11 @@ void Lc3_OP_BR(LC3_CPU_t *cpu)
     if (n || z || p)
     {
         Lc3_WriteReg(cpu, REG_PC, sign_extend(instruction & 0xFF, 8U) + Lc3_ReadPC(cpu));
-        printf(" # [BR -> $0x%04X]\n", Lc3_ReadPC(cpu));
+        LOG_TXT(" # [BR -> $0x%04X]\n", Lc3_ReadPC(cpu));
     }
     else
     {
-        printf(" # [Not allowed]\n");
+        LOG_TXT(" # [Not allowed, BR -> $0x%04X]\n", Lc3_ReadPC(cpu));
     }
 }
 
@@ -430,30 +441,37 @@ uint8_t Lc3_OP_Trap(LC3_CPU_t *cpu)
     switch (trp_v)
     {
     case TRAP_GETC:
-        Lc3_WriteReg(cpu, REG_R0, getchar());
+        tmp = getchar();
+        Lc3_WriteReg(cpu, REG_R0, tmp);
+        LOG_TXT(" # [GETC key: %u]\n", Lc3_ReadReg(cpu, REG_R0));
         break;
     case TRAP_OUT:
-        printf("%c", Lc3_ReadReg(cpu, REG_R0));
+        putc((char)Lc3_ReadReg(cpu, REG_R0), stdout);
+        LOG_TXT(" # [OUT key: %u]\n", Lc3_ReadReg(cpu, REG_R0));
         break;
     case TRAP_PUTS:
         tmp = Lc3_ReadReg(cpu, REG_R0);
         while (1)
         {
-            uint16_t mem = Lc3_ReadMem(cpu, tmp);
+            char mem = Lc3_ReadMem(cpu, tmp);
             if (mem == 0x0000)
             {
                 break;
             }
-            printf("%c", mem);
+            putc(mem, stdout);
             tmp++;
         }
+        LOG_TXT(" # [PUTS]\n");
         break;
     case TRAP_IN:
-        Lc3_WriteReg(cpu, REG_R0, getchar());
-        printf("%c", Lc3_ReadReg(cpu, REG_R0));
+        tmp = getchar();
+        Lc3_WriteReg(cpu, REG_R0, tmp);
+        putc(Lc3_ReadReg(cpu, REG_R0), stdout);
+        LOG_TXT(" # [IN key: %u]\n", Lc3_ReadReg(cpu, REG_R0));
         break;
     case TRAP_PUTSP:
         tmp = Lc3_ReadReg(cpu, REG_R0);
+        LOG_TXT(" # [PUTSP]\n");
         while (1)
         {
             uint16_t mem = Lc3_ReadMem(cpu, tmp);
@@ -461,15 +479,17 @@ uint8_t Lc3_OP_Trap(LC3_CPU_t *cpu)
             {
                 break;
             }
-            printf("%c%c", mem & 0xFF, mem >> 8);
+            putc((char)(mem & 0xFF), stdout);
+            putc((char)(mem >> 8), stdout);
             tmp++;
         }
         break;
     case TRAP_HALT:
         stop = 0x1;
+        LOG_TXT(" # [HALT]\n");
         break;
     }
-
+    fflush(stdout);
     Lc3_WriteReg(cpu, REG_PC, Lc3_ReadReg(cpu, REG_R7));
     return !stop;
 }
