@@ -190,13 +190,13 @@ void Lc3_OP_Add(LC3_CPU_t *cpu)
     {
         uint16_t param = sign_extend(instruction & 0x1F, 5);
         Lc3_WriteReg(cpu, dr, Lc3_ReadReg(cpu, sr1) + param);
-        printf(" # [R%u <- R%u + %u] = %u\n", dr, sr1, param, cpu->regs[dr]);
+        printf(" # [R%u <- R%u + 0x%04X] = 0x%04X\n", dr, sr1, param, cpu->regs[dr]);
     }
     else
     {
         uint16_t sr2 = instruction & 0x7;
         Lc3_WriteReg(cpu, dr, Lc3_ReadReg(cpu, sr1) + Lc3_ReadReg(cpu, sr2));
-        printf(" # [R%u <- R%u + R%u] = %u\n", dr, sr1, sr2, cpu->regs[dr]);
+        printf(" # [R%u <- R%u + R%u] = 0x%04X\n", dr, sr1, sr2, cpu->regs[dr]);
     }
     Lc3_CPU_UpdateCCReg(cpu, dr);
 }
@@ -219,13 +219,13 @@ void Lc3_OP_And(LC3_CPU_t *cpu)
     {
         uint16_t param = sign_extend(instruction & 0x1F, 5);
         Lc3_WriteReg(cpu, dr, Lc3_ReadReg(cpu, sr1) & param);
-        printf(" # [R%u <- R%u & %u] = %u\n", dr, sr1, param, cpu->regs[dr]);
+        printf(" # [R%u <- R%u & 0x%04X] = 0x%04X\n", dr, sr1, param, cpu->regs[dr]);
     }
     else
     {
         uint16_t sr2 = instruction & 0x7;
         Lc3_WriteReg(cpu, dr, Lc3_ReadReg(cpu, sr1) & Lc3_ReadReg(cpu, sr2));
-        printf(" # [R%u <- R%u & R%u] = %u\n", dr, sr1, sr2, cpu->regs[dr]);
+        printf(" # [R%u <- R%u & R%u] = 0x%04X\n", dr, sr1, sr2, cpu->regs[dr]);
     }
     Lc3_CPU_UpdateCCReg(cpu, dr);
 }
@@ -285,7 +285,7 @@ void Lc3_OP_STR(LC3_CPU_t *cpu)
     //
     uint16_t instruction = FETCH_INSTRUCTION_CPU(cpu);
     uint16_t sr = (instruction >> 9) & 0x7;
-    uint16_t base = (instruction >> 6) & 0x7;
+    uint16_t base = Lc3_ReadReg(cpu, (instruction >> 6) & 0x7);
     uint16_t offset = sign_extend(instruction & 0x3F, 6U);
     Lc3_WriteMem(cpu, base + offset, Lc3_ReadReg(cpu, sr));
     printf(" # [R%u -> $0x%04X] = 0x%04X\n", sr, base + offset, Lc3_ReadReg(cpu, sr));
@@ -339,9 +339,9 @@ void Lc3_OP_LD(LC3_CPU_t *cpu)
     // +---+---+---+---+----+-----------+
     uint16_t instruction = FETCH_INSTRUCTION_CPU(cpu);
     uint8_t reg = (instruction >> 9) & 0x7;
-    uint16_t mem = Lc3_ReadMem(cpu, sign_extend(instruction & 0xFF, 8) + Lc3_ReadPC(cpu));
+    uint16_t mem = Lc3_ReadMem(cpu, sign_extend(instruction & 0xFF, 8U) + Lc3_ReadPC(cpu) + 1);
     Lc3_WriteReg(cpu, reg, mem);
-    printf(" # [R%u <- $0x%04X]\n", reg, mem);
+    printf(" # [R%u <- 0x%04X]\n", reg, mem);
     Lc3_CPU_UpdateCCReg(cpu, reg);
 }
 
@@ -353,10 +353,11 @@ void Lc3_OP_LDI(LC3_CPU_t *cpu)
     // +---+---+---+---+----+-----------+
     uint16_t instruction = FETCH_INSTRUCTION_CPU(cpu);
     uint8_t reg = (instruction >> 9) & 0x7;
-    uint16_t i_mem = Lc3_ReadMem(cpu, sign_extend(instruction & 0xFF, 8) + Lc3_ReadPC(cpu));
+    uint16_t addr = sign_extend(instruction & 0xFF, 8) + Lc3_ReadPC(cpu) + 1U;
+    uint16_t i_mem = Lc3_ReadMem(cpu, addr);
     uint16_t mem = Lc3_ReadMem(cpu, i_mem);
     Lc3_WriteReg(cpu, reg, mem);
-    printf(" # [R%u <- $0x%04X]\n", reg, mem);
+    printf(" # [R%u <- 0x%04X]\n", reg, mem);
     Lc3_CPU_UpdateCCReg(cpu, reg);
 }
 
@@ -370,9 +371,10 @@ void Lc3_OP_LDR(LC3_CPU_t *cpu)
     uint8_t reg = (instruction >> 9) & 0x7;
     uint8_t base = (instruction >> 6) & 0x7;
     uint8_t offset = sign_extend(instruction & 0x3F, 6U);
-    uint16_t mem = Lc3_ReadMem(cpu, Lc3_ReadReg(cpu, base) + offset);
+    uint16_t addr = Lc3_ReadReg(cpu, base) + offset;
+    uint16_t mem = Lc3_ReadMem(cpu, addr);
     Lc3_WriteReg(cpu, reg, mem);
-    printf(" # [R%u <- $0x%04X]\n", reg, mem);
+    printf(" # [R%u <- 0x%04X ($0x%04X)]\n", reg, mem, addr);
     Lc3_CPU_UpdateCCReg(cpu, reg);
 }
 
@@ -386,7 +388,7 @@ void Lc3_OP_LEA(LC3_CPU_t *cpu)
     uint8_t reg = (instruction >> 9) & 0x7;
     uint8_t offset = sign_extend(instruction & 0xFF, 8U);
     Lc3_WriteReg(cpu, reg, offset + Lc3_ReadPC(cpu) + 1U);
-    printf(" # [R%u <- $0x%04X]\n", reg, Lc3_ReadReg(cpu, reg));
+    printf(" # [R%u <- 0x%04X]\n", reg, Lc3_ReadReg(cpu, reg));
     Lc3_CPU_UpdateCCReg(cpu, reg);
 }
 
@@ -434,10 +436,15 @@ uint8_t Lc3_OP_Trap(LC3_CPU_t *cpu)
         printf("%c", Lc3_ReadReg(cpu, REG_R0));
         break;
     case TRAP_PUTS:
-        tmp = Lc3_ReadMem(cpu, Lc3_ReadReg(cpu, REG_R0));
-        while (tmp != 0x0000)
+        tmp = Lc3_ReadReg(cpu, REG_R0);
+        while (1)
         {
-            printf("%c", Lc3_ReadMem(cpu, tmp));
+            uint16_t mem = Lc3_ReadMem(cpu, tmp);
+            if (mem == 0x0000)
+            {
+                break;
+            }
+            printf("%c", mem);
             tmp++;
         }
         break;
@@ -446,7 +453,7 @@ uint8_t Lc3_OP_Trap(LC3_CPU_t *cpu)
         printf("%c", Lc3_ReadReg(cpu, REG_R0));
         break;
     case TRAP_PUTSP:
-        tmp = Lc3_ReadMem(cpu, Lc3_ReadReg(cpu, REG_R0));
+        tmp = Lc3_ReadReg(cpu, REG_R0);
         while (1)
         {
             uint16_t mem = Lc3_ReadMem(cpu, tmp);
