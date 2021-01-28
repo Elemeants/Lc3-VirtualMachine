@@ -1,3 +1,13 @@
+/**
+ * @file obj_loader.h
+ * @author Daniel Polanco (jdanypa@gmail.com)
+ * @brief 
+ * @version 1.0
+ * @date 2021-01-27
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
 #if !defined(__OBJ_LOADER_H__)
 #define __OBJ_LOADER_H__
 
