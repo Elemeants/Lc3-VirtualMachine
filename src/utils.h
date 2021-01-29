@@ -34,4 +34,8 @@ extern uint16_t swap_16(uint16_t v);
  */
 extern uint16_t sign_extend(uint16_t x, int bit_count);
 
+#define _BV(__v) (1 << __v)
+#define READ_3BITS(__word, __offset) ((__word >> __offset) & 0x7)
+#define READ_BIT(__word, __offset) ((__word >> __offset) & 0b1)
+
 #endif // __UTILS_H__

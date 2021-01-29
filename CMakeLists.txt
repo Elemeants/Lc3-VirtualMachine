@@ -15,7 +15,7 @@ add_compile_options(
 )
 
 add_executable(lc3vm
-src/obj_loader.c
+src/firmware.c
 src/utils.c
 src/cpu.c
 src/main.c

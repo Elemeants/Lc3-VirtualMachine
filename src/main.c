@@ -8,11 +8,12 @@
  * 
  */
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "console.h"
 #include "cpu.h"
+#include "firmware.h"
 #include "log.h"
-#include "obj_loader.h"
 
 /**
  * @brief Mame of the log output file
@@ -20,8 +21,8 @@
  */
 #define LOG_OUTPUT_FILENAME "lc3vm.log"
 
-LC3_CPU_t cpu;
-char *filename = NULL;
+LC3Firmware_t firmware;
+LC3Cpu_t cpu;
 
 int main(int argc, char const *argv[])
 {
@@ -35,20 +36,12 @@ int main(int argc, char const *argv[])
 
     OSKeyboardInit();
 
-    if (!Lc3_initCPU(&cpu, argv[1]))
-    {
-        return 2;
-    }
+    loadFirmwareFromFile(argv[1], &firmware);
+    dumpFirmware(&firmware);
 
-    while (1)
-    {
-        uint8_t status = Lc3_execInstruction(&cpu);
-        if (!status)
-        {
-            break;
-        }
-        Lc3_fetchNext(&cpu);
-    }
+    LC3CpuInit(&cpu, &firmware);
 
-    return 0;
+    LC3CpuExecute(&cpu);
+
+    return EXIT_SUCCESS;
 }

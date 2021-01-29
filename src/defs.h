@@ -52,7 +52,8 @@ typedef enum
     OP_JMP,   // Jump
     OP_RES,   // Not Used
     OP_LEA,   // Load effective address
-    OP_TRAP   // Trap
+    OP_TRAP,   // Trap
+    OP_COUNT
 } Lc3Opcodes_e;
 
 /**
@@ -70,8 +71,6 @@ typedef enum
     REG_R6,
     REG_R7,
     REG_R8,
-    REG_PC,   // Program counter
-    REG_CC,   // Condition codes (Positive, Negative, Zero)
     REG_COUNT
 } Lc3Registers_e;
 
