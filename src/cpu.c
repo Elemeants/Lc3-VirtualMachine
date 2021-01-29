@@ -49,7 +49,7 @@ void LC3CpuExecute(LC3Cpu_t *cpu)
         LC3Instruction_t inst = LC3CpuReadInstruction(cpu);
         LOG(" PC: 0x%04X [0x%04X] -> %s ",
             cpu->PC,
-            cpu->firmware->memory[cpu->PC],
+            LC3CpuReadMemory(cpu, cpu->PC),
             LC3Opcodes[inst.opcode].name);
         LC3Opcodes[inst.opcode].action(cpu, inst);
         if (cpu->stat.incrementPC)
@@ -61,7 +61,8 @@ void LC3CpuExecute(LC3Cpu_t *cpu)
 
 LC3Instruction_t LC3CpuReadInstruction(LC3Cpu_t *cpu)
 {
-    LC3Instruction_t *c = (LC3Instruction_t *)&cpu->firmware->memory[cpu->PC];
+    uint16_t mem = LC3CpuReadMemory(cpu, cpu->PC);
+    LC3Instruction_t *c = (LC3Instruction_t *)&mem;
     return *c;
 }
 
