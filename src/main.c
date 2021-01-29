@@ -21,11 +21,15 @@
  */
 #define LOG_OUTPUT_FILENAME "lc3vm.log"
 
+#define VERSION_STR "v" __VM_VERSION__ "." __TIME__ "." __DATE__
+
 LC3Firmware_t firmware;
 LC3Cpu_t cpu;
 
 int main(int argc, char const *argv[])
 {
+    printf("Little Machine 3 - Virtual machine %s\n", VERSION_STR);
+
     if (argc < 2)
     {
         printf("Usage: lc3vm [obj-file]\n");
